@@ -1,0 +1,123 @@
+proxy-providers:
+  鹿语云:
+    type: http
+    url: "订阅地址"
+    interval: 86400
+    path: ./providers/luyuyun.yaml
+    health-check:
+      enable: true
+      url: https://cp.cloudflare.com/generate_204
+      interval: 300
+
+proxy-groups:
+  - name: Proxy
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png
+    proxies:
+      - Auto
+      - HomeBroadband
+      - DIRECT
+      
+  - name: Auto
+    type: url-test
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Auto.png
+    url: https://cp.cloudflare.com/generate_204
+    interval: 1800
+    tolerance: 50
+    lazy: true
+    filter: "(?i)日本|jp|japan|tokyo|港|hk|hongkong|新加坡|sg|singapore"
+    use:
+      - 鹿语云
+      
+  - name: AI
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/ChatGPT.png
+    proxies:
+      - HomeBroadband
+      - Proxy
+      
+  - name: Twitter
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Twitter.png
+    proxies:
+      - HomeBroadband
+      - Proxy
+      
+  - name: Telegram
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png
+    proxies:
+      - HomeBroadband
+      - Proxy
+      
+  - name: Google
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google_Search.png
+    proxies:
+      - HomeBroadband
+      - Proxy
+      
+  - name: Speedtest
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Speedtest.png
+    proxies:
+      - DIRECT
+      - HomeBroadband
+      - Proxy
+      
+  - name: HomeBroadband
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Back.png
+    filter: "(?i)家宽|住宅|home|isp|residential"
+    use:
+      - 鹿语云
+
+# 极简规则集
+rule-providers:
+  ai-!cn:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs"
+    path: ./rules/ai-!cn.mrs
+    interval: 86400
+  ads:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ads-all.mrs"
+    path: ./rules/ads.mrs
+    interval: 86400
+  apple-cn:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple-cn.mrs"
+    path: ./rules/apple-cn.mrs
+    interval: 86400
+# 规则
+rules:
+  # L0 本地网络
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  # L1 拦截
+  - RULE-SET,ads,REJECT
+  # L2 国内直连
+  - RULE-SET,apple-cn,DIRECT
+  - GEOSITE,CN,DIRECT
+  # L3 功能服务（境外）
+  - DOMAIN-SUFFIX,speedtest.net,Speedtest
+  - DOMAIN-SUFFIX,twitter.com,Twitter
+  - DOMAIN-SUFFIX,twimg.com,Twitter
+  - DOMAIN-SUFFIX,t.me,Telegram
+  - DOMAIN-SUFFIX,telegram.org,Telegram
+  - DOMAIN-KEYWORD,google,Google
+  - DOMAIN-KEYWORD,youtube,Google
+  - RULE-SET,ai-!cn,AI
+  # L4 境外兜底（域名层）
+  - GEOSITE,geolocation-!cn,Proxy
+  # L5 IP 层
+  - GEOIP,CN,DIRECT,no-resolve
+  # FINAL
+  - MATCH,Proxy
