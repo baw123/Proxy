@@ -1,0 +1,179 @@
+# Stash iOS
+mixed-port: 7890
+allow-lan: true
+bind-address: "*"
+ipv6: false
+mode: rule
+log-level: warning
+unified-delay: true
+tcp-concurrent: true
+global-client-fingerprint: chrome
+
+keep-alive-interval: 1800
+geodata-mode: true
+geodata-loader: memconservative
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+proxy-providers:
+  鹿语云:
+    type: http
+    url: "订阅地址"
+    interval: 86400
+    path: ./providers/luyuyun.yaml
+    health-check:
+      enable: true
+      url: https://cp.cloudflare.com/generate_204
+      interval: 300
+    benchmark-url: https://cp.cloudflare.com/generate_204
+
+proxies:
+  - name: Tailscale
+    type: tailscale
+    auth-key: tskey-auth
+    hostname: stash-iphone
+    control-url: https://controlplane.tailscale.com
+    ephemeral: false
+
+# 策略组
+proxy-groups:
+  - name: Proxy
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Proxy.png
+    proxies:
+      - Auto
+      - HomeBroadband
+      - DIRECT
+
+  - name: Auto
+    type: url-test
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Auto.png
+    url: https://cp.cloudflare.com/generate_204
+    interval: 1800
+    tolerance: 50
+    lazy: true
+    filter: "(?i)日本|jp|japan|tokyo|港|hk|hongkong|新加坡|sg|singapore"
+    use:
+      - 鹿语云
+
+  - name: AI
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/ChatGPT.png
+    proxies:
+      - HomeBroadband
+      - Proxy
+
+  - name: Twitter
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Twitter.png
+    proxies:
+      - HomeBroadband
+      - Proxy
+
+  - name: Telegram
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Telegram.png
+    proxies:
+      - HomeBroadband
+      - Proxy
+
+  - name: Google
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Google_Search.png
+    proxies:
+      - HomeBroadband
+      - Proxy
+
+  - name: Speedtest
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Speedtest.png
+    proxies:
+      - DIRECT
+      - HomeBroadband
+      - Proxy
+
+  - name: HomeBroadband
+    type: select
+    icon: https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Back.png
+    filter: "(?i)家宽|住宅|home|isp|residential"
+    use:
+      - 鹿语云
+
+# 极简规则集
+rule-providers:
+  ai-!cn:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs"
+    path: ./rules/ai-!cn.mrs
+    interval: 86400
+  ads:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ads-all.mrs"
+    path: ./rules/ads.mrs
+    interval: 86400
+  apple-cn:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/apple-cn.mrs"
+    path: ./rules/apple-cn.mrs
+    interval: 86400
+# 规则
+rules:
+  # L0 本地网络
+  - IP-CIDR,100.64.0.0/10,Tailscale,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - RULE-SET,ads,REJECT
+  # L1 拦截
+  - RULE-SET,ads,REJECT
+  # L2 国内直连
+  - RULE-SET,apple-cn,DIRECT
+  - GEOSITE,CN,DIRECT
+  # L3 功能服务（境外）
+  - DOMAIN-SUFFIX,speedtest.net,Speedtest
+  - DOMAIN-SUFFIX,twitter.com,Twitter
+  - DOMAIN-SUFFIX,twimg.com,Twitter
+  - DOMAIN-SUFFIX,t.me,Telegram
+  - DOMAIN-SUFFIX,telegram.org,Telegram
+  - DOMAIN-KEYWORD,google,Google
+  - DOMAIN-KEYWORD,youtube,Google
+  - RULE-SET,ai-!cn,AI
+  # L4 境外兜底（域名层）
+  - GEOSITE,geolocation-!cn,Proxy
+  # L5 IP 层
+  - GEOIP,CN,DIRECT,no-resolve
+  # FINAL
+  - MATCH,Proxy
+
+# DNS 优化
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  use-hosts: true
+  default-nameserver:
+    - 119.29.29.29
+    - 223.5.5.5
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  proxy-server-nameserver:
+    - https://doh.pub/dns-query
+  fake-ip-filter:
+    - "*.apple.com"
+    - "*apple.com"
+    - "*.icloud.com"
+
+hosts:
+  pi4.home: 100.119.118.23
+
+subscribe-url: "订阅地址"
