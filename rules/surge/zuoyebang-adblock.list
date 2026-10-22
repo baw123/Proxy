@@ -1,0 +1,47 @@
+# 作业帮 & 快对作业 去广告规则 (Surge)
+# 来源: https://github.com/Small-gift/adguard-zuoyebang-rules
+
+# 一、广告与追踪
+DOMAIN-SUFFIX,adx.zuoyebang.com
+DOMAIN-SUFFIX,adx.yukeweb.com
+DOMAIN-SUFFIX,selltrack.fengniaojianzhan.com
+
+# 二、VIP与视频解析
+DOMAIN-SUFFIX,vipvideo-1.cdnjtzy.com
+DOMAIN-SUFFIX,vipvideo-2.cdnjtzy.com
+DOMAIN-SUFFIX,vipvideo-3.cdnjtzy.com
+DOMAIN-SUFFIX,vipvideo.cdnjtzy.com
+DOMAIN-SUFFIX,vip-3.cdnjtzy.com
+DOMAIN-SUFFIX,zyb-vip.cdnjtzy.com
+DOMAIN-SUFFIX,zyb-vip-1.cdnjtzy.com
+DOMAIN-SUFFIX,zyb-vip-2.cdnjtzy.com
+DOMAIN-SUFFIX,zyb-vip-3.cdnjtzy.com
+DOMAIN-SUFFIX,apivip.kuaiduizuoye.com
+DOMAIN-SUFFIX,vip.kuaiduizuoye.com
+DOMAIN-SUFFIX,apivip.zuoyebang.com
+DOMAIN-SUFFIX,vip.zuoyebang.com
+DOMAIN-SUFFIX,viprec.zuoyebang.com
+
+# 三、商城与销售推广
+DOMAIN-SUFFIX,sellgoods-z.cdnjtzy.com
+DOMAIN-SUFFIX,sellgoods-z-1.cdnjtzy.com
+DOMAIN-SUFFIX,sell.cdnjtzy.com
+DOMAIN-SUFFIX,sell-3.cdnjtzy.com
+DOMAIN-SUFFIX,sell-ssr.cdnjtzy.com
+DOMAIN-SUFFIX,sell-ssr-1.cdnjtzy.com
+DOMAIN-SUFFIX,sell-ssr-2.cdnjtzy.com
+DOMAIN-SUFFIX,sell-ssr-3.cdnjtzy.com
+DOMAIN-SUFFIX,mall-ssr.cdnjtzy.com
+DOMAIN-SUFFIX,mall.zuoyebang.com
+
+# 四、营销活动与用户内容
+DOMAIN-SUFFIX,activities.zuoyebang.com
+DOMAIN-SUFFIX,competition.zuoyebang.com
+DOMAIN-SUFFIX,ugc.zuoyebang.com
+DOMAIN-SUFFIX,user-vue.zuoyebang.com
+
+# 五、第三方组件与其它
+DOMAIN-SUFFIX,fengniaojianzhan.com
+DOMAIN-SUFFIX,fengniaocdn.cdnjtzy.com
+DOMAIN-SUFFIX,fengniao.bangbangkids.cn
+DOMAIN-SUFFIX,app.zhaoqiqslx.com
