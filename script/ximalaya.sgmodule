@@ -1,4 +1,4 @@
-#!name=喜马拉雅去广告 (从 Loon 转换)
+#!name=喜马拉雅去广告
 #!desc=喜马拉雅自有广告域名 + 埋点 + 第三方广告平台拦截 + adse 接口空返回
 #!author=YG / 转换自 XM040523
 #!system=ios
