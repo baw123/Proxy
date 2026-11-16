@@ -1,0 +1,91 @@
+#!name=喜马拉雅去广告
+#!desc=喜马拉雅 FM 去广告（Surge 版）：自有广告域名 + 埋点采集 + 第三方广告平台拦截，adse 接口级复写 + MitM。移植自 XM040523/ximalaya-adblock（Loon 插件）
+#!category=去广告
+
+# ════════════════════════════════════════════════════════════════════
+# 来源与移植说明
+#
+# 原项目：https://github.com/XM040523/ximalaya-adblock （Loon 插件，MIT）
+# 原规则来源：NobyDa/Script、Repcz/Tool（AWAvenue / Dlerio / SukkaW）、luestr/ProxyResource
+#
+# Loon -> Surge 的差异处理：
+#   1. [Rewrite] reject_dict(200)  ->  [URL Rewrite] ... - reject-dict
+#   2. [Mitm] hostname             ->  [MITM] hostname = %APPEND% ...
+#   3. 【关键】Loon 的 Rewrite 先于规则匹配执行；Surge 对 HTTPS 是先用 CONNECT
+#      走规则，若 adse.ximalaya.com 被 REJECT，连接在解密前就断了，
+#      URL Rewrite 永远没机会触发。所以本模块 [Rule] 里不再写
+#      adse.ximalaya.com，改由 [URL Rewrite] 在 MitM 解密后兜底：
+#      三个已知广告接口 -> reject-dict（返回 200 + {}），其余路径 -> reject。
+#
+# 前提：Surge 已安装并信任 MitM 证书，且 MitM 总开关已打开。
+# ════════════════════════════════════════════════════════════════════
+
+[Rule]
+# ── A 区 · 喜马拉雅自有广告域名 ──
+# adse.ximalaya.com 不在此处，见 [URL Rewrite]
+DOMAIN-SUFFIX,ad.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adx.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adbehavior.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adbehavior.wsa.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adbs.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adwbs.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adsehera.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adse.wsa.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adweb.ximalaya.com,REJECT
+DOMAIN-SUFFIX,dns.ximalaya.com,REJECT
+DOMAIN-SUFFIX,ad.test.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adse.test.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adweb.test.ximalaya.com,REJECT
+# 有争议，默认不拦（定位服务，拦了可能影响「本地电台」等按地区推荐）
+# DOMAIN-SUFFIX,location.ximalaya.com,REJECT
+
+# ── A2 区 · 埋点与数据采集（「猜你喜欢」变差就注释掉这两行）──
+DOMAIN-SUFFIX,xdcs-collector.ximalaya.com,REJECT
+DOMAIN-SUFFIX,linkeye.ximalaya.com,REJECT
+
+# ── B 区 · 第三方广告平台（全局生效，影响所有 App）──
+# 只想针对喜马拉雅就把 B 区整段注释掉
+# 穿山甲 / GroMore（字节跳动）
+DOMAIN-SUFFIX,oceanengine.com,REJECT
+DOMAIN-SUFFIX,ad.toutiao.com,REJECT
+DOMAIN-SUFFIX,pangolin16.sgsnssdk.com,REJECT
+# 字节通用日志上报（拦住只掉统计；会影响抖音/头条系 App 的上报）
+DOMAIN-SUFFIX,log.snssdk.com,REJECT
+DOMAIN-SUFFIX,ib.snssdk.com,REJECT
+# 优量汇 / 腾讯广告
+DOMAIN-SUFFIX,gdt.qq.com,REJECT
+DOMAIN-SUFFIX,e.qq.com,REJECT
+DOMAIN-SUFFIX,pgdt.gtimg.cn,REJECT
+# 聚合广告平台
+DOMAIN-SUFFIX,toponad.com,REJECT
+DOMAIN-SUFFIX,mintegral.com,REJECT
+DOMAIN-SUFFIX,mbridge.com,REJECT
+DOMAIN-SUFFIX,sigmob.com,REJECT
+DOMAIN-SUFFIX,ad.e.kuaishou.com,REJECT
+DOMAIN-SUFFIX,mobads.baidu.com,REJECT
+# 海外广告平台
+DOMAIN-SUFFIX,applovin.com,REJECT
+DOMAIN-SUFFIX,inmobi.com,REJECT
+DOMAIN-SUFFIX,chartboost.com,REJECT
+DOMAIN-SUFFIX,vungle.com,REJECT
+DOMAIN-SUFFIX,unityads.unity3d.com,REJECT
+DOMAIN-SUFFIX,doubleclick.net,REJECT
+DOMAIN-SUFFIX,googleads.g.doubleclick.net,REJECT
+DOMAIN-SUFFIX,pagead2.googlesyndication.com,REJECT
+
+[URL Rewrite]
+# ── C 区 · adse.ximalaya.com 接口级复写（来自 NobyDa/Script）──
+# 命中即返回 200 + {}，App 拿到合法空响应，静默渲染无广告状态
+# /ting/feed?appid=    音频流内插广告
+# /ting/loading?appid= 开屏广告
+# /ting?appid=         通用广告请求
+^https?:\/\/adse\.ximalaya\.com\/ting\/feed\?appid= - reject-dict
+^https?:\/\/adse\.ximalaya\.com\/ting\/loading\?appid= - reject-dict
+^https?:\/\/adse\.ximalaya\.com\/ting\?appid= - reject-dict
+# 兜底：adse 上其余路径一律拒绝（对应 Loon 版 A 区对 adse 的整域拦截）
+# URL Rewrite 按顺序匹配，必须放在上面三条之后
+^https?:\/\/adse\.ximalaya\.com\/ - reject
+
+[MITM]
+# 只解密 adse 一个域名；不要写 *.ximalaya.com，音频/图片走 xmcdn，解密只会拖慢播放
+hostname = %APPEND% adse.ximalaya.com
