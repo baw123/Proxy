@@ -1,0 +1,11 @@
+#!name=网易云畅听
+#!desc=畅听 VIP 歌曲。
+#!category=Sgmodule
+#!arguments=TOKEN:口令,NAME:备注
+#!arguments-desc=TOKEN:填入专属口令\nNAME:填设备备注，如张三的手机，不填留空\n\n
+[Script]
+歌曲播放与详情 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/x?eapi\/(?:v\d+\/)?song\/(?!(?:like|dislike)),requires-body=true,script-path=https://raw.githubusercontent.com/yisaings/surge/main/netease/netease-gateway-client-redirect-1794142900.js,argument=TOKEN={{{TOKEN}}}&NAME={{{NAME}}}
+歌单详情 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/w?x?e?api\/(?:homepage\/|v\d+\/)?playlist\/(?!(?:delete|subscribe|unsubscribe|create|update|manipulate|tracks)),requires-body=true,script-path=https://raw.githubusercontent.com/baw123/Proxy/main/module/163/netease-gateway-client-redirect.js,argument=TOKEN={{{TOKEN}}}&NAME={{{NAME}}}
+VIP与音质鉴权 = type=http-request,pattern=^https?:\/\/interface\d?\.music\.163\.com\/x?eapi\/(?:vipnewcenter|vipauth|music\/privilege|soundquality|song\/enhance\/privilege|v\d+\/user\/vip|user\/setting),requires-body=true,script-path=https://raw.githubusercontent.com/baw123/Proxy/main/module/163/netease-gateway-client-redirect.js,argument=TOKEN={{{TOKEN}}}&NAME={{{NAME}}}
+[MITM]
+hostname = %APPEND% interface.music.163.com, interface3.music.163.com
